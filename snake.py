@@ -79,9 +79,9 @@ class Game(object):
         self.delay = delay
         self.state = INIT
 
-        midpoint = (int(width/2), int(height/2))
-        self.apple = Apple(width, height, [midpoint])
-        self.snake = Snake([midpoint], None)
+        self.midpoint = (int(width/2), int(height/2))
+        self.apple = Apple(width, height, [self.midpoint])
+        self.snake = Snake([self.midpoint], None)
 
     def render(self, stdscr):
         k = 0
@@ -126,9 +126,8 @@ class Game(object):
                     elif self.state == PAUSED:
                         self.state = RUNNING
                 elif char == "r" and self.state == GAMEOVER:
-                    midpoint = (int(width/2), int(height/2))
-                    self.apple = Apple(width, height, [midpoint])
-                    self.snake = Snake([midpoint], None)
+                    self.snake = Snake([self.midpoint], None)
+                    self.apple.respawn([self.midpoint])
                     self.state = INIT
                     stdscr.addstr(figlet_format('READY PLAYER ONE', font='starwars'))
                     stdscr.refresh()
@@ -136,16 +135,16 @@ class Game(object):
                 elif self.state == RUNNING and direction:
                     x, y = self.snake.move(self.apple.coordinates, direction)
             elif self.state == RUNNING:
-                status_str += "PRESS P TO PAUSE"
                 x, y = self.snake.move(self.apple.coordinates)
 
             if self.state == RUNNING:
-                if (x, y) in old_snake_body or x == 0 or y == 0 or x == self.width + 1 or y == self.height + 1:
+                if self.snake.body != old_snake_body and ((x, y) in old_snake_body or x == 0 or y == 0 or x == self.width + 1 or y == self.height + 1):
                     self.state = GAMEOVER
                 elif (x, y) == self.apple.coordinates:
                     self.apple.respawn(self.snake.body)
+                status_str += "PRESS P TO PAUSE"
             elif self.state == INIT:
-                status_str = "TO BEGIN, USE THE WASD KEYS TO MOVE UP, LEFT, DOWN AND RIGHT RESPECTIVELY"
+                status_str += "TO BEGIN, USE THE WASD KEYS TO MOVE UP, LEFT, DOWN AND RIGHT RESPECTIVELY\n\n"
             elif self.state == PAUSED:
                 status_str = "PAUSED: PRESS P TO RESUME"
             elif self.state == GAMEOVER:
@@ -189,7 +188,7 @@ class Game(object):
 
 
 def main():
-    game = Game(30, 30, delay=0.3)
+    game = Game(30, 30, delay=0.1)
     curses.wrapper(game.render)
 
 
