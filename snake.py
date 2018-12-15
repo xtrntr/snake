@@ -27,6 +27,7 @@ class Snake(object):
         new_position = (self.body[-1][0] + self.direction[0],
                         self.body[-1][1] + self.direction[1])
         self.body = self.body[1:] + [new_position]
+        return new_position
 
     def set_direction(self, direction):
         self.direction = direction
@@ -37,7 +38,7 @@ class Snake(object):
     def move(self, direction=None):
         if direction and self.valid_direction(direction):
             self.set_direction(direction)
-        self.take_step()
+        return self.take_step()
 
     def head(self):
         return self.body[-1]
@@ -52,7 +53,7 @@ class Game(object):
         self.state = True
 
         head = (int(width/2), int(height/2))
-        tail = (int(width/2), int(height/2) + 1)
+        tail = (int(width/2), int(height/2) - 1)
         self.snake = Snake([tail, head], DOWN)
 
     def render(self, stdscr):
@@ -74,6 +75,7 @@ class Game(object):
             # Initialization
             stdscr.clear()
             height, width = stdscr.getmaxyx()
+            old_snake_body = self.snake.body
 
             # do not wait for input when calling getch
             stdscr.nodelay(1)
@@ -81,11 +83,11 @@ class Game(object):
             if k != -1:
                 char = chr(k)
                 direction = None if char not in mapping else mapping[char]
-                dead = self.snake.move(direction)
+                x, y = self.snake.move(direction)
             else:
-                dead = self.snake.move()
+                x, y = self.snake.move()
 
-            if dead:
+            if (x, y) in old_snake_body or x == 0 or y == 0 or x == self.width + 1 or y == self.height + 1:
                 stdscr.refresh()
                 self.state = False
 
